@@ -6,6 +6,6 @@
 
 For Configuration information see [Memcache Caching Config](docs/config.md)
 
-For working example see [Wookie - Example Cache](example-http)
+For working example see [Wookie - Example Cache](example-caching)
 
 See [Cache Docs](../wookiee-cache/README.md)
