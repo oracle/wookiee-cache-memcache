@@ -15,8 +15,13 @@
         <build.version>1.0.0</build.version>
         <release.type>SNAPSHOT</release.type>
         <build>${build.number}</build>
-        <parent.dir>${project.basedir}/../..</parent.dir>
+
+        <build-artifact-name>${project.artifactId}-${project.version}</build-artifact-name>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.artifact.version>2.11</scala.artifact.version>
+        <scala.version>${scala.artifact.version}.4</scala.version>
+        <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
     </properties>
 
     <groupId>com.webtrends</groupId>
@@ -24,6 +29,43 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Component: MemCached</name>
+    <description>Wookiee Cache enables an easy Cacheable trait for in process memory caching.
+        Other cache storage implementations are available such as MemCached.</description>
+
+    <!-- List the core committers -->
+    <developers>
+        <developer>
+            <id>wteng</id>
+            <name>Webtrends Engineering</name>
+            <email>info@webtrends.com</email>
+            <organization>webtrends</organization>
+            <organizationUrl>http://webtrends.com</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-8</timezone>
+        </developer>
+    </developers>
+
+    <url>http://webtrends.github.io/wookiee-cache-memcache</url>
+    <organization>
+        <name>webtrends</name>
+        <url>http://webtrends.com</url>
+    </organization>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/Webtrends/wookiee-cache-memcache/issues</url>
+    </issueManagement>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
 
     <repositories>
         <repository>
@@ -284,7 +326,7 @@
             <plugin>
                 <groupId>org.scoverage</groupId>
                 <artifactId>scoverage-maven-plugin</artifactId>
-                <version>1.0.4</version>
+                <version>1.1.1</version>
                 <configuration>
                     <scalaVersion>${scala.version}</scalaVersion>
                     <highlighting>true</highlighting>
@@ -296,6 +338,16 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <coberturaReports>
+                        <param>${project.build.directory}/cobertura.xml</param>
+                    </coberturaReports>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
