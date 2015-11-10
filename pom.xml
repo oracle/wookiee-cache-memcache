@@ -133,12 +133,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wookiee-cache</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wookiee-core</artifactId>
-            <version>1.1.1</version>
+            <version>1.1.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -149,7 +149,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wookiee-test</artifactId>
-            <version>1.1.1</version>
+            <version>1.1.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
