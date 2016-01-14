@@ -132,7 +132,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wookiee-cache</artifactId>
-            <version>1.0.6</version>
+            <version>1.0.7</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
