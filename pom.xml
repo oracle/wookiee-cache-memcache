@@ -21,6 +21,7 @@
         <scala.version>${scala.artifact.version}.4</scala.version>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <wookiee.core.version>1.1.5</wookiee.core.version>
+        <wookiee.cache.version>1.0.8</wookiee.cache.version>
     </properties>
 
     <groupId>com.webtrends</groupId>
@@ -132,7 +133,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wookiee-cache</artifactId>
-            <version>1.0.7</version>
+            <version>${wookiee.cache.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
