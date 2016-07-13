@@ -20,8 +20,8 @@
         <scala.artifact.version>2.11</scala.artifact.version>
         <scala.version>${scala.artifact.version}.4</scala.version>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
-        <wookiee.core.version>1.1.8</wookiee.core.version>
-        <wookiee.cache.version>1.0.10</wookiee.cache.version>
+        <wookiee.core.version>1.1.13</wookiee.core.version>
+        <wookiee.cache.version>1.0.12</wookiee.cache.version>
     </properties>
 
     <groupId>com.webtrends</groupId>

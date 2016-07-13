@@ -10,7 +10,7 @@
     <properties>
         <!-- Pull the build.number from the build system and use it in the manifest of the jar -->
         <build>1.0-SNAPSHOT</build>
-        <build-artifact-name>${project.name}-${project.version}.${build}</build-artifact-name>
+        <wookiee.core.version>1.1.13</wookiee.core.version>
     </properties>
 
     <repositories>
@@ -25,7 +25,7 @@
         <dependency>
             <groupId>com.webtrends</groupId>
             <artifactId>wookiee-core</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${wookiee.core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.webtrends</groupId>
