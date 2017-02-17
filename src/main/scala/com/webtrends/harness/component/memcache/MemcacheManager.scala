@@ -81,11 +81,8 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
    */
   override protected def createCache(config:CacheConfig) : Boolean = {
     caches.get(config.namespace) match {
-      case Some(c) =>
-        if (c == null)
-          false
-        else
-          true
+      case Some(c) if c != null => true
+      case Some(_) => false
       case None =>
         val cache = new Memcache(build(config), config)
         MemcacheManager.addCache(config.namespace, cache)
@@ -113,7 +110,8 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
    */
   override protected def get(namespace:String, key:String) : Future[Option[ChannelBuffer]] = {
     caches.get(namespace) match {
-      case Some(c) => fromTwitter(c.get(key))
+      case Some(c) =>
+        fromTwitter(c.get(key))
       case None =>
         log.error("Failed to get key [%s] from cache [%s] as it does not exist".format(key, namespace))
         Future { None }
