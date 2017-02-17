@@ -19,20 +19,28 @@
 package com.webtrends.harness.component.memcache
 
 import com.twitter.finagle.memcached.Client
-import com.twitter.util.{Promise, Future}
+import com.twitter.util.{Future, Promise}
 import com.webtrends.harness.component.cache.CacheConfig
+import com.webtrends.harness.component.metrics.TimerStopwatch
+import com.webtrends.harness.component.metrics.metrictype.Histogram
 import org.jboss.netty.buffer.ChannelBuffer
 
 case class Memcache(client:Client, config:CacheConfig) {
 
+  val insertedDataBytes = Histogram(s"memcache.${config.namespace}.inserted-data-bytes")
+  val failedDataBytes = Histogram(s"memcache.${config.namespace}.failed-data-bytes")
+
   def get(key:String) : Future[Option[ChannelBuffer]] = {
+    val timer = new TimerStopwatch(s"memcache.${config.namespace}.get")
     val p = Promise[Option[ChannelBuffer]]
     val ck = getCacheKey(key)
     ck onSuccess { cKey =>
       val f = client.get(cKey)
       f onSuccess { data =>
+        if (data.isDefined) timer.success() else timer.failure()
         p.setValue(data)
       } onFailure { ex =>
+        timer.failure()
         p.setException(ex)
       }
     }
@@ -40,25 +48,37 @@ case class Memcache(client:Client, config:CacheConfig) {
   }
 
   def set(key:String, value:ChannelBuffer) : Future[Boolean] = {
+    val timer = new TimerStopwatch(s"memcache.${config.namespace}.set")
+
+    // Will need to be updated if we ever use non array backed ChannelBuffers
+    val dataSize: Option[Long] = if (value.hasArray) Some(value.array.length) else None
+
     val p = Promise[Boolean]
     val ck = getCacheKey(key)
     ck onSuccess { cKey =>
+      timer.success()
+      dataSize.foreach(insertedDataBytes.update)
       client.set(cKey, value)
       p.setValue(true)
     } onFailure { ex =>
+      timer.failure()
+      dataSize.foreach(failedDataBytes.update)
       p.setException(ex)
     }
     p
   }
 
   def delete(key:String) : Future[Boolean] = {
+    val timer = new TimerStopwatch(s"memcache.${config.namespace}.delete")
     val p = Promise[Boolean]
     val ck = getCacheKey(key)
     ck onSuccess { cKey =>
       val result = client.delete(cKey)
       result onSuccess { data =>
+        timer.success()
         p.setValue(data)
       } onFailure { ex =>
+        timer.failure()
         p.setException(ex)
       }
     }
@@ -66,13 +86,16 @@ case class Memcache(client:Client, config:CacheConfig) {
   }
 
   def increment(key:String, delta:Long) : Future[Option[Long]] = {
+    val timer = new TimerStopwatch(s"memcache.${config.namespace}.increment")
     val p = Promise[Option[Long]]
     val ck = getCacheKey(key)
     ck onSuccess { cKey =>
       val result = client.incr(cKey, delta)
       result onSuccess { res =>
+        timer.success()
         p.setValue(Some(Long.unbox(res)))
       } onFailure { ex =>
+        timer.failure()
         p.setException(ex)
       }
     }
@@ -80,13 +103,16 @@ case class Memcache(client:Client, config:CacheConfig) {
   }
 
   def decrement(key:String, delta:Long) : Future[Option[Long]] = {
+    val timer = new TimerStopwatch(s"memcache.${config.namespace}.decrement")
     val p = Promise[Option[Long]]
     val ck = getCacheKey(key)
     ck onSuccess { cKey =>
       val result = client.decr(cKey, delta)
       result onSuccess { res =>
+        timer.success()
         p.setValue(Some(Long.unbox(res)))
       } onFailure { ex =>
+        timer.failure()
         p.setException(ex)
       }
     }
@@ -94,11 +120,14 @@ case class Memcache(client:Client, config:CacheConfig) {
   }
 
   def getCacheKey(key:String) : Future[String] = {
+    val timer = new TimerStopwatch(s"memcache.${config.namespace}.getCacheKey")
     val p = Promise[String]
     val currentSet = _getCurrentSet
     currentSet onSuccess { cKey =>
+      timer.success()
       p.setValue(_getKey(key, cKey))
     } onFailure { ex =>
+      timer.failure()
       p.setValue(_getKey(key, -1))
     }
     p
