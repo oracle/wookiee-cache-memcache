@@ -22,13 +22,16 @@ import com.twitter.finagle.builder.ClientBuilder
 import com.twitter.finagle.memcached._
 import com.twitter.finagle.memcached.protocol.text.Memcached
 import com.twitter.util.{Duration, Return, Throw, Future => TwitterFuture}
-import com.webtrends.harness.component.cache.{CacheConfig, Cache}
+import com.webtrends.harness.component.cache.{Cache, CacheConfig}
 import com.webtrends.harness.health.{ComponentState, HealthComponent}
-import org.jboss.netty.buffer.ChannelBuffer
+import org.jboss.netty.buffer.{ChannelBuffer, ChannelBuffers}
 
 import scala.collection.mutable
 import scala.concurrent._
 import scala.util.{Failure, Success}
+import scala.pickling._
+import binary._
+
 
 /**
  * MemcacheManager will allow users to send messages to create caches, get, and various other methods
@@ -43,6 +46,9 @@ object MemcacheManager {
     caches += (name -> client)
   }
 }
+
+@SerialVersionUID(11L)
+case class CacheWrapper(expirationTime: Long, data: Array[Byte]) extends Serializable
 
 class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
 
@@ -108,10 +114,21 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
    * @param key The key that you are looking up in the cache
    * @return an Option[ChannelBuffer] to the caller
    */
-  override protected def get(namespace:String, key:String) : Future[Option[ChannelBuffer]] = {
+  override protected def get(namespace:String, key:String) : Future[Option[Array[Byte]]] = {
     caches.get(namespace) match {
       case Some(c) =>
-        fromTwitter(c.get(key))
+        fromTwitter(c.get(key)).map {
+          case Some(wrapped) =>
+            val wrapper = wrapped.array.unpickle[CacheWrapper]
+            if (wrapper.expirationTime == -1 || wrapper.expirationTime > compat.Platform.currentTime) {
+              Some(wrapper.data)
+            } else {
+              delete(namespace, key)
+              None
+            }
+          case None =>
+            None
+        }
       case None =>
         log.error("Failed to get key [%s] from cache [%s] as it does not exist".format(key, namespace))
         Future { None }
@@ -126,9 +143,9 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
    * @param value The value in the form of ChannelBuffer
    * @return an Option[Boolean] to the caller
    */
-  override protected def add(namespace:String, key:String, value:ChannelBuffer) : Future[Boolean] = {
+  override protected def add(namespace:String, key:String, value:Array[Byte], ttlSec: Option[Int]) : Future[Boolean] = {
     caches.get(namespace) match {
-      case Some(c) => fromTwitter(c.set(key, value))
+      case Some(c) => fromTwitter(c.set(key, wrapData(ttlSec, value)))
       case None =>
         log.error("Failed to add key [%s] to cache [%s] as it does not exist".format(key, namespace))
         Future { false }
@@ -215,6 +232,11 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
       .dest(serverList)
       .build()
       .asInstanceOf[PartitionedClient]
+  }
+
+  def wrapData(ttlSec: Option[Int], data: Array[Byte]) : ChannelBuffer = {
+    val wrapper = CacheWrapper(ttlSec.map(_ * 1000 + compat.Platform.currentTime).getOrElse(-1L), data)
+    ChannelBuffers.wrappedBuffer(wrapper.pickle.value)
   }
 
   // todo check connection to memcache
