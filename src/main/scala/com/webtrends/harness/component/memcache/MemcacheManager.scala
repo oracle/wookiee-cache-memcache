@@ -18,14 +18,12 @@
  */
 package com.webtrends.harness.component.memcache
 
-import akka.util.Timeout
 import com.twitter.finagle.builder.ClientBuilder
 import com.twitter.finagle.memcached._
 import com.twitter.finagle.memcached.protocol.text.Memcached
 import com.twitter.util.{Duration, Return, Throw, Future => TwitterFuture}
 import com.webtrends.harness.component.cache.{Cache, CacheConfig}
 import com.webtrends.harness.health.{ComponentState, HealthComponent}
-import net.liftweb.json.{DefaultFormats, Formats}
 import org.jboss.netty.buffer.{ChannelBuffer, ChannelBuffers}
 
 import scala.collection.mutable
@@ -117,7 +115,6 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
    * @return an Option[ChannelBuffer] to the caller
    */
   override protected def get(namespace:String, key:String) : Future[Option[Array[Byte]]] = {
-
     caches.get(namespace) match {
       case Some(c) =>
         fromTwitter(c.get(key)).map {
