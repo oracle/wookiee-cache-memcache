@@ -184,6 +184,11 @@
             <version>${akka.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-pickling_${scala.artifact.version}</artifactId>
+            <version>0.9.1</version>
+        </dependency>
     </dependencies>
 
     <build>
