@@ -30,6 +30,10 @@
     <description>Wookiee Cache enables an easy Cacheable trait for in process memory caching.
         Other cache storage implementations are available such as MemCached.</description>
 
+    <modules>
+        <module>child-pom.xml</module>
+    </modules>
+
     <!-- List the core committers -->
     <developers>
         <developer>
