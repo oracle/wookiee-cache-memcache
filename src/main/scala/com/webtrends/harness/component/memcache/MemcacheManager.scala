@@ -29,7 +29,8 @@ import org.jboss.netty.buffer.{ChannelBuffer, ChannelBuffers}
 import scala.collection.mutable
 import scala.concurrent._
 import scala.util.{Failure, Success}
-import upickle.default._
+import scala.pickling._
+import binary._
 
 
 /**
@@ -118,7 +119,7 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
       case Some(c) =>
         fromTwitter(c.get(key)).map {
           case Some(wrapped) =>
-            val wrapper = readBinary[CacheWrapper](wrapped.array)(macroRW)
+            val wrapper = wrapped.array.unpickle[CacheWrapper]
             if (wrapper.expirationTime == -1 || wrapper.expirationTime > compat.Platform.currentTime) {
               Some(wrapper.data)
             } else {
@@ -235,7 +236,7 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
 
   def wrapData(ttlSec: Option[Int], data: Array[Byte]) : ChannelBuffer = {
     val wrapper = CacheWrapper(ttlSec.map(_ * 1000 + compat.Platform.currentTime).getOrElse(-1L), data)
-    ChannelBuffers.wrappedBuffer(writeBinary(wrapper)(macroW0))
+    ChannelBuffers.wrappedBuffer(wrapper.pickle.value)
   }
 
   // todo check connection to memcache
