@@ -17,11 +17,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <akka.version>2.4.9</akka.version>
         <scala.artifact.version>2.11</scala.artifact.version>
-        <scala.version>${scala.artifact.version}.7</scala.version>
+        <scala.version>${scala.artifact.version}.12</scala.version>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
-        <wookiee.core.version>1.2.5</wookiee.core.version>
-        <wookiee.cache.version>1.2.6</wookiee.cache.version>
-        <wookiee.metrics.version>1.2.5</wookiee.metrics.version>
+        <wookiee.core.version>1.3.35</wookiee.core.version>
+        <wookiee.cache.version>1.2.8</wookiee.cache.version>
+        <wookiee.metrics.version>2.5.10</wookiee.metrics.version>
     </properties>
 
     <groupId>com.webtrends</groupId>
@@ -79,7 +79,7 @@
         <repository>
             <id>twttr</id>
             <name>Twitter Public Repo</name>
-            <url>http://maven.twttr.com</url>
+            <url>https://maven.twttr.com</url>
         </repository>
     </repositories>
 
@@ -132,12 +132,12 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wookiee-cache</artifactId>
+            <artifactId>wookiee-cache_${scala.artifact.version}</artifactId>
             <version>${wookiee.cache.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wookiee-core</artifactId>
+            <artifactId>wookiee-core_${scala.artifact.version}</artifactId>
             <version>${wookiee.core.version}</version>
             <exclusions>
                 <exclusion>
@@ -148,13 +148,13 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wookiee-test</artifactId>
+            <artifactId>wookiee-test_${scala.artifact.version}</artifactId>
             <version>${wookiee.core.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wookiee-metrics</artifactId>
+            <artifactId>wookiee-metrics_${scala.artifact.version}</artifactId>
             <version>${wookiee.metrics.version}</version>
         </dependency>
         <dependency>
