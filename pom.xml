@@ -15,18 +15,18 @@
         <build>${build.number}</build>
         <build-artifact-name>${project.artifactId}-${project.version}</build-artifact-name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <akka.version>2.4.9</akka.version>
+        <!-- <akka.version>2.4.9</akka.version> -->
         <scala.artifact.version>2.11</scala.artifact.version>
         <scala.version>${scala.artifact.version}.12</scala.version>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
-        <wookiee.core.version>1.3.36</wookiee.core.version>
-        <wookiee.cache.version>1.2.11</wookiee.cache.version>
-        <wookiee.metrics.version>2.5.11</wookiee.metrics.version>
+        <wookiee.core.version>1.3-jb_akkaUpdate-SNAPSHOT</wookiee.core.version>
+        <wookiee.cache.version>1.2-jb_akkaUpdate-SNAPSHOT</wookiee.cache.version>
+        <wookiee.metrics.version>2.5-jb_akkaUpdate-SNAPSHOT</wookiee.metrics.version>
     </properties>
 
     <groupId>com.webtrends</groupId>
     <artifactId>wookiee-cache-memcache</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2-jb_akkaUpdate-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Component: MemCached</name>
     <description>Wookiee Cache enables an easy Cacheable trait for in process memory caching.
@@ -178,12 +178,14 @@
             <artifactId>scalatest-maven-plugin</artifactId>
             <version>1.0-M2</version>
         </dependency>
+        <!--
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-testkit_2.11</artifactId>
             <version>${akka.version}</version>
             <scope>test</scope>
         </dependency>
+        -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-pickling_${scala.artifact.version}</artifactId>
