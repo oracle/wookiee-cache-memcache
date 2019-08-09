@@ -177,14 +177,6 @@
             <artifactId>scalatest-maven-plugin</artifactId>
             <version>1.0-M2</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-testkit_2.11</artifactId>
-            <version>${akka.version}</version>
-            <scope>test</scope>
-        </dependency>
-        -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-pickling_${scala.artifact.version}</artifactId>
