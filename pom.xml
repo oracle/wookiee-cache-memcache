@@ -15,13 +15,12 @@
         <build>${build.number}</build>
         <build-artifact-name>${project.artifactId}-${project.version}</build-artifact-name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <akka.version>2.4.9</akka.version>
         <scala.artifact.version>2.11</scala.artifact.version>
         <scala.version>${scala.artifact.version}.12</scala.version>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
-        <wookiee.core.version>1.3.36</wookiee.core.version>
-        <wookiee.cache.version>1.2.11</wookiee.cache.version>
-        <wookiee.metrics.version>2.5.11</wookiee.metrics.version>
+        <wookiee.core.version>1.3.41</wookiee.core.version>
+        <wookiee.cache.version>1.2.14</wookiee.cache.version>
+        <wookiee.metrics.version>2.5.16</wookiee.metrics.version>
     </properties>
 
     <groupId>com.webtrends</groupId>
@@ -177,12 +176,6 @@
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest-maven-plugin</artifactId>
             <version>1.0-M2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-testkit_2.11</artifactId>
-            <version>${akka.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -375,7 +368,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.2.1</version>
                 <configuration>
                     <artifactSet>
                         <includes>
