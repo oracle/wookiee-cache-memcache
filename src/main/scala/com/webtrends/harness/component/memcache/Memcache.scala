@@ -18,21 +18,39 @@
  */
 package com.webtrends.harness.component.memcache
 
+import java.nio.ByteBuffer
+
 import com.twitter.finagle.memcached.Client
+import com.twitter.io.Buf
 import com.twitter.util.{Future, Promise}
 import com.webtrends.harness.component.cache.CacheConfig
 import com.webtrends.harness.component.metrics.TimerStopwatch
 import com.webtrends.harness.component.metrics.metrictype.Histogram
-import org.jboss.netty.buffer.ChannelBuffer
+import com.webtrends.harness.component.memcache.BufUtils._
+
+object BufUtils {
+
+  implicit class BufExtraction(buf: Buf) {
+    def readInt(): Int = {
+      ByteBuffer.wrap(buf.toArray).getInt
+    }
+
+    def toArray: Array[Byte] = {
+      val arr = new Array[Byte](buf.length)
+      buf.write(arr, 0)
+      arr
+    }
+  }
+}
 
 case class Memcache(client:Client, config:CacheConfig) {
 
   val insertedDataBytes = Histogram(s"memcache.${config.namespace}.inserted-data-bytes")
   val failedDataBytes = Histogram(s"memcache.${config.namespace}.failed-data-bytes")
 
-  def get(key:String) : Future[Option[ChannelBuffer]] = {
+  def get(key:String) : Future[Option[Buf]] = {
     val timer = new TimerStopwatch(s"memcache.${config.namespace}.get")
-    val p = Promise[Option[ChannelBuffer]]
+    val p = Promise[Option[Buf]]
     val ck = getCacheKey(key)
     ck onSuccess { cKey =>
       val f = client.get(cKey)
@@ -47,22 +65,19 @@ case class Memcache(client:Client, config:CacheConfig) {
     p
   }
 
-  def set(key:String, value:ChannelBuffer) : Future[Boolean] = {
+  def set(key:String, value:Buf) : Future[Boolean] = {
     val timer = new TimerStopwatch(s"memcache.${config.namespace}.set")
-
-    // Will need to be updated if we ever use non array backed ChannelBuffers
-    val dataSize: Option[Long] = if (value.hasArray) Some(value.array.length) else None
 
     val p = Promise[Boolean]
     val ck = getCacheKey(key)
     ck onSuccess { cKey =>
       timer.success()
-      dataSize.foreach(insertedDataBytes.update)
+      insertedDataBytes.update(value.length)
       client.set(cKey, value)
       p.setValue(true)
     } onFailure { ex =>
       timer.failure()
-      dataSize.foreach(failedDataBytes.update)
+      failedDataBytes.update(value.length)
       p.setException(ex)
     }
     p
@@ -139,16 +154,15 @@ case class Memcache(client:Client, config:CacheConfig) {
   }
 
   private def _getCurrentSet : Future[Int] = {
+
     val p = Promise[Int]
     if (config.setKey.isEmpty) {
       p.setValue(-1)
     } else {
       val f = client.get(config.setKey)
-      f onSuccess { reply =>
-        reply match {
-          case Some(buffer) => p.setValue(buffer.readInt())
-          case None => p.setValue(-1)
-        }
+      f onSuccess {
+        case Some(buffer) => p.setValue(buffer.readInt())
+        case None => p.setValue(-1)
       } onFailure { reply =>
         p.setValue(-1)
       }
