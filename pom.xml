@@ -159,7 +159,7 @@
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>finagle-memcached_2.11</artifactId>
-            <version>6.24.0</version>
+            <version>19.11.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.zookeeper</groupId>

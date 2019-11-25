@@ -18,13 +18,14 @@
  */
 package com.webtrends.harness.component.memcache
 
-import com.twitter.finagle.builder.ClientBuilder
+import com.twitter.finagle.Memcached
 import com.twitter.finagle.memcached._
-import com.twitter.finagle.memcached.protocol.text.Memcached
-import com.twitter.util.{Duration, Return, Throw, Future => TwitterFuture}
+import com.twitter.io.Buf
+import com.twitter.io.Buf.ByteArray
+import com.twitter.util.{Return, Throw, Future => TwitterFuture}
 import com.webtrends.harness.component.cache.{Cache, CacheConfig}
 import com.webtrends.harness.health.{ComponentState, HealthComponent}
-import org.jboss.netty.buffer.{ChannelBuffer, ChannelBuffers}
+import com.webtrends.harness.component.memcache.BufUtils._
 
 import scala.collection.mutable
 import scala.concurrent._
@@ -119,7 +120,7 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
       case Some(c) =>
         fromTwitter(c.get(key)).map {
           case Some(wrapped) =>
-            val wrapper = wrapped.array.unpickle[CacheWrapper]
+            val wrapper = wrapped.toArray.unpickle[CacheWrapper]
             if (wrapper.expirationTime == -1 || wrapper.expirationTime > compat.Platform.currentTime) {
               Some(wrapper.data)
             } else {
@@ -226,17 +227,15 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
     val concurrency = config.getProperty(KeyConcurrency, Some(3)).get.asInstanceOf[Int]
     val timeout = config.getProperty(KeyTimeout, Some(1)).get.asInstanceOf[Int]
 
-    KetamaClientBuilder()
-      .clientBuilder(ClientBuilder().hostConnectionLimit(concurrency).codec(Memcached()).failFast(false))
-      .failureAccrualParams(Int.MaxValue, Duration.Top)
-      .dest(serverList)
-      .build()
-      .asInstanceOf[PartitionedClient]
+    Memcached.client
+      .connectionsPerEndpoint(concurrency)
+      .newRichClient(serverList)
   }
 
-  def wrapData(ttlSec: Option[Int], data: Array[Byte]) : ChannelBuffer = {
+  def wrapData(ttlSec: Option[Int], data: Array[Byte]) : Buf = {
     val wrapper = CacheWrapper(ttlSec.map(_ * 1000 + compat.Platform.currentTime).getOrElse(-1L), data)
-    ChannelBuffers.wrappedBuffer(wrapper.pickle.value)
+    val bytes = wrapper.pickle.value
+    new ByteArray(bytes, 0, bytes.length)
   }
 
   // todo check connection to memcache
