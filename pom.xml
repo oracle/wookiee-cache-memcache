@@ -20,8 +20,8 @@
         <akka.version>2.5.4</akka.version>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <wookiee.core.version>2.0-SNAPSHOT</wookiee.core.version>
-        <wookiee.cache.version>1.2.7</wookiee.cache.version>
-        <wookiee.metrics.version>2.5.9</wookiee.metrics.version>
+        <wookiee.cache.version>2.0-SNAPSHOT</wookiee.cache.version>
+        <wookiee.metrics.version>3.0-SNAPSHOT</wookiee.metrics.version>
     </properties>
 
     <groupId>com.webtrends</groupId>
@@ -134,6 +134,8 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wookiee-cache_${scala.artifact.version}</artifactId>
             <version>${wookiee.cache.version}</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/wookiee-cache_2.12-1.2-SNAPSHOT.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -156,6 +158,8 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wookiee-metrics_${scala.artifact.version}</artifactId>
             <version>${wookiee.metrics.version}</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/wookiee-metrics_2.12-2.5-SNAPSHOT.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.twitter</groupId>
