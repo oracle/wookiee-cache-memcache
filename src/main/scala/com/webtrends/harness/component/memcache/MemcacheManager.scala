@@ -214,9 +214,9 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
     val serverList = config.getProperty(KeyServerList, None).get.asInstanceOf[String]
 
     Memcached.client.withEjectFailedHost(false)
-        .withRequestTimeout(Duration(15, TimeUnit.SECONDS))
-        .withSession.acquisitionTimeout(Duration(15, TimeUnit.SECONDS))
-        .newRichClient(serverList)
+      .withRequestTimeout(Duration(15, TimeUnit.SECONDS))
+      .withSession.acquisitionTimeout(Duration(15, TimeUnit.SECONDS))
+      .newRichClient(serverList)
   }
 
   def wrapData(ttlSec: Option[Int], data: Array[Byte]) : Buf = {

@@ -7,10 +7,10 @@ import com.twitter.io.Buf
 import com.twitter.io.Buf.ByteArray
 import com.twitter.util.{Await, Duration}
 import com.webtrends.harness.component.cache.CacheConfig
-import org.specs2.mutable.SpecificationWithJUnit
+import org.scalatest.{MustMatchers, WordSpec}
 
-class MemcacheSpec extends SpecificationWithJUnit {
-  sequential
+class MemcacheSpec  extends WordSpec with MustMatchers {
+
 
   "Memcache" should {
     "recover data" in {
@@ -55,7 +55,7 @@ class MemcacheSpec extends SpecificationWithJUnit {
         memcache.set("testKey", new ByteArray(bytes, 0, bytes.length))
         memcache.delete("testKey")
         val got = Await.result(memcache.get("testKey"), Duration(3, TimeUnit.SECONDS))
-        got must beNone
+        got mustBe None
       } finally client.close()
     }
   }
