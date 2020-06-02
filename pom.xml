@@ -26,6 +26,8 @@
 
     <groupId>com.webtrends</groupId>
     <artifactId>wookiee-cache-memcache_2.12</artifactId>
+    <!-- For non-tagged builds, the branch will be inserted into this version,
+    e.g. 2.0-SNAPSHOT -> 2.0-$branch-SNAPSHOT -->
     <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Component: MemCached</name>
@@ -79,7 +81,7 @@
         <repository>
             <id>twttr</id>
             <name>Twitter Public Repo</name>
-            <url>http://maven.twttr.com</url>
+            <url>https://maven.twttr.com</url>
         </repository>
     </repositories>
 
@@ -160,7 +162,7 @@
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>finagle-memcached_${scala.artifact.version}</artifactId>
-            <version>19.3.0</version>
+            <version>19.11.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.zookeeper</groupId>
