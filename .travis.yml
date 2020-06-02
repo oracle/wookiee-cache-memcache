@@ -1,42 +1,56 @@
 dist: trusty
 language: scala
-scala:
-- 2.11.4
+
 jdk:
-- oraclejdk8
+  - oraclejdk8
+
 addons:
   apt:
-    packages:
-      - oracle-java8-installer
+    packages:
+      - oracle-java8-installer
+
 sudo: false
-branches:
-  only:
-  - master
-  - /^[0-9]+\.[0-9]+\.[0-9]+$/
-cache:
-  directories:
-  - $HOME/.m2
-
-before_install:
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && echo "Not a PR Build" && [ "IS_${TRAVIS_TAG}" != "IS_" ] && echo "Is tag build $TRAVIS_TAG" || echo "."'
-- '[ "IS_${TRAVIS_TAG}" != "IS_" ] && mvn versions:set -DnewVersion=$TRAVIS_TAG || true'
-
-install:
-- 'mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V'
-
-before_script:
-- test "$TRAVIS_PULL_REQUEST" == "false" && git clone -b travis `git config --get remote.origin.url` target/travis || true
-
-script:
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && echo "Deploying..." && mvn deploy --settings target/travis/settings.xml || echo "Testing..." && mvn test -B'
-
-after_success:
-- '[ "$TRAVIS_TAG" != "" ] && mvn site-deploy -P github-site -Dgithub.global.oauth2Token=$GITHUB_TOKEN || true'
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "$TRAVIS_TAG" = "" ] && mvn scoverage:report coveralls:report || true'
 
 env:
   global:
-  - MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=256m"
-  - secure: "sl00TRTD643hClk+xe6AK9akQqZCS3xLSz0JXvlh0sFdHA0hRIWOmdGnLy8RJTT83QTbqoOCbPLkA7jd4pQBQiw3lHL4Of/UOP73E7mky9XVObb6sahyhAiRg3BJibEDn0ms1oKi62NPPKZN6zAnN3OrDH9QzFiHHIwVDuFb+M3IdfPvGl6f0KPO7npTN6ATeikHO5WPddcxVZeFhITRO4HttNLtPIF7h1IG4u36BRZsSPjwqN8EjwFPh8job68Eswo/2kiS0A4c7O+/BsFOm3ZTC9mRShA1zYHdt30COUaxQxSNBW8WOLcsIhXzjE3Ef7d9F+eXg9r5ZuHvG/tngZec+3k1FZEaH/Zfnhovwj5XFXhxIkEX5bqCqo9ilk8wAtgj4PZE7JsOGHejWsduv7JB7X/nb6yS8w59FXkFthUmK8yz5ZKuy7nCiUJuS4XIFuh1KusAos85cQh91XYTxUtxUISNVTNTcyCjH59RZ9iXkXfmx9F3jcOPLdawAenfHaq5CdOMFz34dy0aD6KONWIFR+CUDn6Y6R5GbpdJv0lPG6djdFBYLf1n+vGapCPjxL5Wohy4MYck3E0vz5hCmpKM/2pa/YnZDwGJgfa49CuQvwmDDFdvf0QOkDGX4rs8YxhcwwC2vqzng255bOzqOqfH32Xmxf1/YCEZA81PHuU="
-  - secure: "VawrmOS8LwMWadSbN1xFQX9VJJePJ/JkWEhDSY/rtUjrMy65ag6zjCZX9cl7yg8YcXvtI3fryRl3DE28dbdreJoshM22wBFCyugWgWddPh8P9J24VNUsA0zrpQe/HIsTyjv6JXeQpcyHFnP6d36zAfLMSZhlEjo0g34NQ6+nOHnNWN6UaoqklczHeDkOp6JmyeXz0q+czG1+As9VMKCtl0T0gUhe8nagHik/gaKx3CRMEQbO9xnFJInjWEJt/eQMQW67W9T9dOnHI32AB2Ixl+TGHHqTsfFOdvgLFFS8EWMxBNpP9mNjD4fZI+kxT0Vs+vYUabeIZhaye3yRhmUTSO1ID+VkjDXuNc62GljS9dcUaIa8kEDYcElIcXV1jdmIExt7z2k/tDNxydVdqRhbruLzsGf9gBPDNBtY47uF8iKZbwo9R4Su9ak3FYeuW8d9LmybWtM5DCKqR4c3xd7ZScHtbcHUaJwMRedpVDSG0lEfx4l+d4uLnHkpTM/H+c3nYNhREGb1q5uJ2MyOjKvJ3e/rA2pK5nq4hfUtmrcVxbnGFmeRQnYNp6ujuZ23ZlA7ux2lnaV0uetJEpv+qE6ZLsAsWq6/iy/Dp+r83NyhN7eOIpfbsdOGdrRIb3/vMMClxd02xfOHbvP1MUit62U86Ti6w4gz9OKz91S+hzeG4+M="
-  - secure: "n2PFRo4l2vuzYtHOQyx/Jc72GM4o+TFquZXLasWZaEbQdrsAbn4IS7zGVv+SSJVpExCPsjDuFScXDsPKB5RdjnBsfpjVSnkBQxVEdRIV14ndo/xjaXy8iBdB14JeHcLLpJm7XY9XDzlI9otz+dzlP9USnKjxY6EZNup2UGC8ZFxI5PCAzz1BLMjX3SHk58T65Bk/ZdBViVXo0+b1YFTPLfuv9s7atY9xK8f6/lsbEJnTx0H596+OB6+eXCP8tmss8++ajZL4+1tMkWhzDaDlFzKHHtnysIIO/yGHuRP9yWTiJbaTPVjwMR4auQY14gDBDunbSwj5Rj/ASnaYca2wLFjIR+RweHFJR2nkc6hLvo4ktkk8ohfPu145nzScofKt9EpZsnYmp8Xkzt3YZlp3dN84DmBCr4RFPaa4QHn4eLeAkUXfOXD6kNT+ztFXMvaVsPi2G8kg/EXOFJSFM7z9K9HuVxeJp5G1q37sIIOt45LUUB6u8QEn8FVGIwAlBGLHeRMVHhtgCVY8upp2HC6JiUW+ReksodrsOqhKSZ4T2bye1S2jQD6uXitz5lLIWE1dQ+Q0oSHzLKn8U91RmK/3pQ2YLpqKpRRFVmRtEpKg74UnLtx7vWc/IZRzKuRPjl2xtP2Mja7BBibkLeYblpK9k4oxBCXTWSsG/8BkOHt850M="
+    - MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=256m"
+    - secure: "sl00TRTD643hClk+xe6AK9akQqZCS3xLSz0JXvlh0sFdHA0hRIWOmdGnLy8RJTT83QTbqoOCbPLkA7jd4pQBQiw3lHL4Of/UOP73E7mky9XVObb6sahyhAiRg3BJibEDn0ms1oKi62NPPKZN6zAnN3OrDH9QzFiHHIwVDuFb+M3IdfPvGl6f0KPO7npTN6ATeikHO5WPddcxVZeFhITRO4HttNLtPIF7h1IG4u36BRZsSPjwqN8EjwFPh8job68Eswo/2kiS0A4c7O+/BsFOm3ZTC9mRShA1zYHdt30COUaxQxSNBW8WOLcsIhXzjE3Ef7d9F+eXg9r5ZuHvG/tngZec+3k1FZEaH/Zfnhovwj5XFXhxIkEX5bqCqo9ilk8wAtgj4PZE7JsOGHejWsduv7JB7X/nb6yS8w59FXkFthUmK8yz5ZKuy7nCiUJuS4XIFuh1KusAos85cQh91XYTxUtxUISNVTNTcyCjH59RZ9iXkXfmx9F3jcOPLdawAenfHaq5CdOMFz34dy0aD6KONWIFR+CUDn6Y6R5GbpdJv0lPG6djdFBYLf1n+vGapCPjxL5Wohy4MYck3E0vz5hCmpKM/2pa/YnZDwGJgfa49CuQvwmDDFdvf0QOkDGX4rs8YxhcwwC2vqzng255bOzqOqfH32Xmxf1/YCEZA81PHuU="
+    - secure: "VawrmOS8LwMWadSbN1xFQX9VJJePJ/JkWEhDSY/rtUjrMy65ag6zjCZX9cl7yg8YcXvtI3fryRl3DE28dbdreJoshM22wBFCyugWgWddPh8P9J24VNUsA0zrpQe/HIsTyjv6JXeQpcyHFnP6d36zAfLMSZhlEjo0g34NQ6+nOHnNWN6UaoqklczHeDkOp6JmyeXz0q+czG1+As9VMKCtl0T0gUhe8nagHik/gaKx3CRMEQbO9xnFJInjWEJt/eQMQW67W9T9dOnHI32AB2Ixl+TGHHqTsfFOdvgLFFS8EWMxBNpP9mNjD4fZI+kxT0Vs+vYUabeIZhaye3yRhmUTSO1ID+VkjDXuNc62GljS9dcUaIa8kEDYcElIcXV1jdmIExt7z2k/tDNxydVdqRhbruLzsGf9gBPDNBtY47uF8iKZbwo9R4Su9ak3FYeuW8d9LmybWtM5DCKqR4c3xd7ZScHtbcHUaJwMRedpVDSG0lEfx4l+d4uLnHkpTM/H+c3nYNhREGb1q5uJ2MyOjKvJ3e/rA2pK5nq4hfUtmrcVxbnGFmeRQnYNp6ujuZ23ZlA7ux2lnaV0uetJEpv+qE6ZLsAsWq6/iy/Dp+r83NyhN7eOIpfbsdOGdrRIb3/vMMClxd02xfOHbvP1MUit62U86Ti6w4gz9OKz91S+hzeG4+M="
+    - secure: "n2PFRo4l2vuzYtHOQyx/Jc72GM4o+TFquZXLasWZaEbQdrsAbn4IS7zGVv+SSJVpExCPsjDuFScXDsPKB5RdjnBsfpjVSnkBQxVEdRIV14ndo/xjaXy8iBdB14JeHcLLpJm7XY9XDzlI9otz+dzlP9USnKjxY6EZNup2UGC8ZFxI5PCAzz1BLMjX3SHk58T65Bk/ZdBViVXo0+b1YFTPLfuv9s7atY9xK8f6/lsbEJnTx0H596+OB6+eXCP8tmss8++ajZL4+1tMkWhzDaDlFzKHHtnysIIO/yGHuRP9yWTiJbaTPVjwMR4auQY14gDBDunbSwj5Rj/ASnaYca2wLFjIR+RweHFJR2nkc6hLvo4ktkk8ohfPu145nzScofKt9EpZsnYmp8Xkzt3YZlp3dN84DmBCr4RFPaa4QHn4eLeAkUXfOXD6kNT+ztFXMvaVsPi2G8kg/EXOFJSFM7z9K9HuVxeJp5G1q37sIIOt45LUUB6u8QEn8FVGIwAlBGLHeRMVHhtgCVY8upp2HC6JiUW+ReksodrsOqhKSZ4T2bye1S2jQD6uXitz5lLIWE1dQ+Q0oSHzLKn8U91RmK/3pQ2YLpqKpRRFVmRtEpKg74UnLtx7vWc/IZRzKuRPjl2xtP2Mja7BBibkLeYblpK9k4oxBCXTWSsG/8BkOHt850M="
+
+matrix:
+  include:
+    - scala: '2.12.10'
+      env: SCALAVER=2.12
+    - scala: '2.13.1'
+      env: SCALAVER=2.13
+
+branches:
+  only:
+    - master
+    - /^[0-9]+\.[0-9]+\.[0-9]+$/
+
+cache:
+  directories:
+    - $HOME/.m2
+
+before_install:
+  - git clone -b travis `git config --get remote.origin.url` target/travis
+  - chmod +x bin/changeScalaVersion.sh
+  - bin/changeScalaVersion.sh $TRAVIS_SCALA_VERSION $SCALAVER
+
+install: true
+
+script:
+  - |
+    if [ "$TRAVIS_TAG" != "" ]; then
+      mvn versions:set -DnewVersion=$TRAVIS_TAG
+    fi
+  - |
+    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
+      mvn deploy --settings target/travis/settings.xml
+    fi
+  - |
+    if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
+      mvn test -B
+    fi

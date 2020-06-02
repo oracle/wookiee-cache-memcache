@@ -18,20 +18,20 @@
  */
 package com.webtrends.harness.component.memcache
 
+import java.util.concurrent.TimeUnit
+
 import com.twitter.finagle.Memcached
 import com.twitter.finagle.memcached._
 import com.twitter.io.Buf
 import com.twitter.io.Buf.ByteArray
-import com.twitter.util.{Return, Throw, Future => TwitterFuture}
+import com.twitter.util.{Duration, Return, Throw, Future => TwitterFuture}
 import com.webtrends.harness.component.cache.{Cache, CacheConfig}
 import com.webtrends.harness.health.{ComponentState, HealthComponent}
-import com.webtrends.harness.component.memcache.BufUtils._
+import upickle.default._
 
 import scala.collection.mutable
 import scala.concurrent._
 import scala.util.{Failure, Success}
-import scala.pickling._
-import binary._
 
 
 /**
@@ -41,9 +41,9 @@ import binary._
  */
 object MemcacheManager {
   val ComponentName = "wookiee-cache-memcache"
-  val caches = mutable.Map[String, Memcache]()
+  val caches: mutable.Map[String, Memcache] = mutable.Map[String, Memcache]()
 
-  def addCache(name:String, client:Memcache) = {
+  def addCache(name:String, client:Memcache): caches.type = {
     caches += (name -> client)
   }
 }
@@ -54,22 +54,18 @@ case class CacheWrapper(expirationTime: Long, data: Array[Byte]) extends Seriali
 class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
 
   import context.dispatcher
-  def caches = MemcacheManager.caches
+  def caches: mutable.Map[String, Memcache] = MemcacheManager.caches
 
   override def postStop(): Unit = {
     // close all connections on stop
     caches map {
-      case (k, v) => v.close
+      case (_, v) => v.close
     }
     super.postStop()
   }
 
   /**
    * Function that will convert Twitter Futures to Scala Futures, so we can respond to the user correctly
-   *
-   * @param twitterFuture
-   * @tparam A
-   * @return
    */
   def fromTwitter[A](twitterFuture: TwitterFuture[A]): Future[A] = {
     val promise = Promise[A]()
@@ -91,7 +87,7 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
       case Some(c) if c != null => true
       case Some(_) => false
       case None =>
-        val cache = new Memcache(build(config), config)
+        val cache = Memcache(build(config), config)
         MemcacheManager.addCache(config.namespace, cache)
         true
     }
@@ -100,9 +96,6 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
   /**
    * Deletes the cache in memcache
    * Not supported by memcache
-   *
-   * @param namespace
-   * @return
    */
   override protected def deleteCache(namespace:String) : Boolean = {
     false
@@ -120,7 +113,7 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
       case Some(c) =>
         fromTwitter(c.get(key)).map {
           case Some(wrapped) =>
-            val wrapper = wrapped.toArray.unpickle[CacheWrapper]
+            val wrapper = readBinary[CacheWrapper](Buf.ByteArray.Owned.extract(wrapped))(macroRW)
             if (wrapper.expirationTime == -1 || wrapper.expirationTime > compat.Platform.currentTime) {
               Some(wrapper.data)
             } else {
@@ -216,36 +209,29 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
    * This builds the memcache client.
    * In the future we will need to create more options for different types of clients, like Replication, Cluster and Ketama
    * Initially will just use SimpleClient
-   *
-   * TODO: add timeouts for the connections
-   *
-   * @param config
-   * @return
    */
   private def build(config:CacheConfig) : Client = {
     val serverList = config.getProperty(KeyServerList, None).get.asInstanceOf[String]
-    val concurrency = config.getProperty(KeyConcurrency, Some(3)).get.asInstanceOf[Int]
-    val timeout = config.getProperty(KeyTimeout, Some(1)).get.asInstanceOf[Int]
 
-    Memcached.client
-      .connectionsPerEndpoint(concurrency)
+    Memcached.client.withEjectFailedHost(false)
+      .withRequestTimeout(Duration(15, TimeUnit.SECONDS))
+      .withSession.acquisitionTimeout(Duration(15, TimeUnit.SECONDS))
       .newRichClient(serverList)
   }
 
   def wrapData(ttlSec: Option[Int], data: Array[Byte]) : Buf = {
     val wrapper = CacheWrapper(ttlSec.map(_ * 1000 + compat.Platform.currentTime).getOrElse(-1L), data)
-    val bytes = wrapper.pickle.value
-    new ByteArray(bytes, 0, bytes.length)
+    val array = writeBinary(wrapper)(macroW0)
+    new ByteArray(array, 0, array.length)
   }
 
-  // todo check connection to memcache
   override def checkHealth: Future[HealthComponent] = {
     val p = Promise[HealthComponent]()
     if (caches.isEmpty) {
       p success HealthComponent(self.path.name, ComponentState.NORMAL, "Managing %d caches".format(0))
     } else {
       val future = Future.traverse(caches) {
-        case (k, v) => fromTwitter(v.checkHealth())
+        case (_, v) => fromTwitter(v.checkHealth())
       }.mapTo[Seq[CacheStatus]]
       future onComplete {
         case Success(result) =>
