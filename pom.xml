@@ -71,12 +71,12 @@
 
     <repositories>
         <repository>
-            <id>JFrog</id>
-            <url>http://oss.jfrog.org/oss-release-local</url>
-        </repository>
-        <repository>
             <id>JFrog Snap</id>
             <url>http://oss.jfrog.org/oss-snapshot-local</url>
+        </repository>
+        <repository>
+            <id>JFrog</id>
+            <url>http://oss.jfrog.org/oss-release-local</url>
         </repository>
         <repository>
             <id>twttr</id>

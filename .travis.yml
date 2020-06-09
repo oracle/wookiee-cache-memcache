@@ -50,7 +50,7 @@ script:
         mvn versions:set -DnewVersion="$VERS"
       fi
 
-      mvn deploy --settings target/travis/settings.xml
+      mvn deploy -U --settings target/travis/settings.xml
     fi
   - |
     if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
