@@ -230,10 +230,10 @@ class MemcacheManager(name:String) extends Cache(name) with MemcacheConstants {
     if (caches.isEmpty) {
       p success HealthComponent(self.path.name, ComponentState.NORMAL, "Managing %d caches".format(0))
     } else {
-      val future = Future.traverse(caches) {
-        case (_, v) => fromTwitter(v.checkHealth())
-      }.mapTo[Seq[CacheStatus]]
-      future onComplete {
+      val statuses = caches.map {
+        case (_, v) => fromTwitter(v.checkHealth()).mapTo[CacheStatus]
+      }
+      Future.sequence(statuses) onComplete {
         case Success(result) =>
           val comp = HealthComponent(self.path.name, ComponentState.NORMAL, "Managing %d caches".format(result.size))
           result.zipWithIndex.foreach { case (status, i) =>
